@@ -11,6 +11,10 @@ import { AppService } from './app.service.js';
 export const { ObserveModule, ObserveInstrument } =
   createObserveModule();
 
+const rabbitMQUrl =
+  process.env.RABBITMQ_URL ||
+  'amqp://taskflow:taskflow_dev_password@localhost:5672';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -34,22 +38,22 @@ export const { ObserveModule, ObserveInstrument } =
         name: 'AUTH_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: [
-            'amqp://taskflow:taskflow_dev_password@localhost:5672',
-          ],
+          urls: [rabbitMQUrl],
           queue: 'auth_queue',
-          queueOptions: { durable: true },
+          queueOptions: {
+            durable: true,
+          },
         },
       },
       {
         name: 'TASK_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: [
-            'amqp://taskflow:taskflow_dev_password@localhost:5672',
-          ],
+          urls: [rabbitMQUrl],
           queue: 'task_queue',
-          queueOptions: { durable: true },
+          queueOptions: {
+            durable: true,
+          },
         },
       },
     ]),
