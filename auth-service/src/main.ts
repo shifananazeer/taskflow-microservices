@@ -8,18 +8,20 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     instrument: ObserveInstrument,
   });
+
   app.useGlobalPipes(
-  new ValidationPipe({
-    whitelist: true,
-    transform: true,
-  }),
-);
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   app.connectMicroservice({
     transport: Transport.RMQ,
     options: {
       urls: [
-        'amqp://taskflow:taskflow_dev_password@localhost:5672',
+        process.env.RABBITMQ_URL ||
+          'amqp://taskflow:taskflow_dev_password@localhost:5672',
       ],
       queue: 'auth_queue',
       queueOptions: {
@@ -33,7 +35,7 @@ async function bootstrap() {
   const port = Number(process.env.PORT ?? 3002);
   await app.listen(port);
 
-  console.log(`Auth Service HTTP: http://localhost:${port}`);
+  console.log(`Auth Service HTTP listening on port ${port}`);
   console.log('Auth Service connected to RabbitMQ queue: auth_queue');
 }
 
