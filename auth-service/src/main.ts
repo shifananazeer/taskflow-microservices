@@ -1,0 +1,40 @@
+
+import { NestFactory } from '@nestjs/core';
+import { Transport } from '@nestjs/microservices';
+import { AppModule, ObserveInstrument } from './app.module.js';
+import { ValidationPipe } from '@nestjs/common';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, {
+    instrument: ObserveInstrument,
+  });
+  app.useGlobalPipes(
+  new ValidationPipe({
+    whitelist: true,
+    transform: true,
+  }),
+);
+
+  app.connectMicroservice({
+    transport: Transport.RMQ,
+    options: {
+      urls: [
+        'amqp://taskflow:taskflow_dev_password@localhost:5672',
+      ],
+      queue: 'auth_queue',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
+
+  await app.startAllMicroservices();
+
+  const port = Number(process.env.PORT ?? 3002);
+  await app.listen(port);
+
+  console.log(`Auth Service HTTP: http://localhost:${port}`);
+  console.log('Auth Service connected to RabbitMQ queue: auth_queue');
+}
+
+await bootstrap();
