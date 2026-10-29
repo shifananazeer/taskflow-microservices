@@ -1,13 +1,12 @@
 
 import { NestFactory } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
-import { AppModule, ObserveInstrument } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
 
+import { AppModule } from './app.module.js';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    instrument: ObserveInstrument,
-  });
+  const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -33,7 +32,7 @@ async function bootstrap() {
   await app.startAllMicroservices();
 
   const port = Number(process.env.PORT ?? 3002);
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   console.log(`Auth Service HTTP listening on port ${port}`);
   console.log('Auth Service connected to RabbitMQ queue: auth_queue');

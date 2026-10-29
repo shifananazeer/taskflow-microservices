@@ -5,17 +5,12 @@ import {
   ConfigService,
 } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { createObserveModule } from '@nestjs/observe';
+import { JwtModule } from '@nestjs/jwt';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { User, UserSchema } from './users/user.schema.js';
 import { UsersService } from './users/users.service.js';
-import { JwtModule } from '@nestjs/jwt';
-
-
-export const { ObserveModule, ObserveInstrument } =
-  createObserveModule();
 
 @Module({
   imports: [
@@ -37,20 +32,18 @@ export const { ObserveModule, ObserveInstrument } =
       { name: User.name, schema: UserSchema },
     ]),
 
-    JwtModule.register({
-  secret: process.env.JWT_SECRET,
-  signOptions: {
-    expiresIn: '15m',
-  },
-}),
-
-    ObserveModule.forRoot({
-      appKey: process.env.OBSERVE_APP_KEY ?? 'YOUR_APP_KEY',
-      appSecret: process.env.OBSERVE_APP_SECRET ?? 'YOUR_APP_SECRET',
-      serviceId: 'auth-service',
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.getOrThrow<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: '15m',
+        },
+      }),
     }),
   ],
   controllers: [AppController],
- providers: [AppService, UsersService],
+  providers: [AppService, UsersService],
 })
 export class AppModule {}
