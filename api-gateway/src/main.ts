@@ -7,10 +7,13 @@ async function bootstrap() {
 
   const allowedOrigins = [
     'http://localhost:3000',
+    'https://taskflow-microservices.vercel.app',
     'https://taskflow-microservices-frontend.vercel.app',
     process.env.FRONTEND_URL,
   ].filter((origin): origin is string => Boolean(origin));
 
+
+  
   app.enableCors({
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
